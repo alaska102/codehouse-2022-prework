@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,9 +28,9 @@ func PostTodo(c *gin.Context) {
 		return
 	}
 
-	item.ID = GetNextId()
+	item.Id = GetNextId()
 	todos = append(todos, item)
-	c.String(http.StatusCreated, c.FullPath()+"/"+strconv.Itoa(item.ID))
+	c.String(http.StatusCreated, c.FullPath()+"/"+strconv.Itoa(item.Id))
 }
 
 func DeleteTodo(c *gin.Context) {
@@ -37,7 +38,7 @@ func DeleteTodo(c *gin.Context) {
 
 	if id, err := strconv.Atoi(idString); err == nil {
 		for index := range todos {
-			if todos[index].ID == id {
+			if todos[index].Id == id {
 				todos = append(todos[:index], todos[index+1:]...)
 				c.Writer.WriteHeader(http.StatusNoContent)
 				return
@@ -50,9 +51,10 @@ func DeleteTodo(c *gin.Context) {
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	todos = append(todos, Todo{ID: GetNextId(), Value: "CodeHouse", DueDate: "7/31/2022"})
+	todos = append(todos, Todo{Id: GetNextId(), Value: "CodeHouse", DueDate: "7/31/2022"})
 
 	r := gin.Default()
+	r.Use(static.Serve("/", static.LocalFile("./todo-vue/dist", false)))
 	r.GET("/api/todos", GetTodos)
 	r.POST("/api/todos", PostTodo)
 	r.DELETE("/api/todos/:id", DeleteTodo)
